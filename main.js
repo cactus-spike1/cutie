@@ -3,7 +3,7 @@
 
 const root = document.querySelector('.root');
 
-const targetDate = new Date('2026-06-04T00:00:00');
+const targetDate = new Date('2026-07-04T00:00:00');
 
 let heartIntervalId = null;
 let commentQueue = [];
