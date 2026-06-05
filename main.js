@@ -4,7 +4,9 @@
 const root = document.querySelector('.root');
 
 const targetDate = new Date('2026-07-04T00:00:00');
-const isSmall = window.screen.width < window.screen.height
+
+const isSmall = window.screen.width < window.screen.height;
+
 let heartIntervalId = null;
 let commentQueue = [];
 let isShowingBirthday = false;
