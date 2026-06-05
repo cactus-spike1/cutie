@@ -3,26 +3,64 @@
 
 const root = document.querySelector('.root');
 
-const targetDate = new Date('2026-06-04T00:00:00');
-
+const targetDate = new Date('2026-07-04T00:00:00');
+const isSmall = window.screen.width < window.screen.height
 let heartIntervalId = null;
 let commentQueue = [];
 let isShowingBirthday = false;
 
 let timerInitialized = false;
 
-function createTimerMarkup() {
-  root.innerHTML = `
-    <div class="timer">
-      <div class="unit"><div class="value" data-key="days">0</div><div class="label">Дней</div></div>
-      <div class="unit"><div class="value" data-key="hours">0</div><div class="label">Часов</div></div>
-      <div class="unit"><div class="value" data-key="minutes">0</div><div class="label">Минут</div></div>
-      <div class="unit"><div class="value" data-key="seconds">0</div><div class="label">Секунд</div></div>
-      <div class="unit"><div class="value" data-key="milliseconds">0</div><div class="label">Мс</div></div>
-    </div>
-  `;
-  timerInitialized = true;
+function isMobilePortrait() {
+  return window.innerWidth <= 768 || (window.screen.width < window.screen.height);
 }
+
+function createTimerMarkup() {
+  // если уже инициализировано — удалим старую разметку, чтобы создать новую
+  if (timerInitialized) {
+    const existing = root.querySelector('.timer') || root.querySelector('.timer-compact');
+    if (existing) existing.remove();
+  }
+
+  if (isMobilePortrait()) {
+    // компактная версия: каждый юнит — на новой строке (символы \n в textContent не создают <br>, используем <div>)
+    root.innerHTML = `
+      <div class="timer-compact">
+        <div class="line"><span class="value" data-key="days">0</span> <span class="label">Дней</span></div>
+        <div class="line"><span class="value" data-key="hours">0</span> <span class="label">Часов</span></div>
+        <div class="line"><span class="value" data-key="minutes">0</span> <span class="label">Минут</span></div>
+        <div class="line"><span class="value" data-key="seconds">0</span> <span class="label">Секунд</span></div>
+        <div class="line"><span class="value" data-key="milliseconds">0</span> <span class="label">Мс</span></div>
+      </div>
+    `;
+  } else {
+    root.innerHTML = `
+      <div class="timer">
+        <div class="unit"><div class="value" data-key="days">0</div><div class="label">Дней</div></div>
+        <div class="unit"><div class="value" data-key="hours">0</div><div class="label">Часов</div></div>
+        <div class="unit"><div class="value" data-key="minutes">0</div><div class="label">Минут</div></div>
+        <div class="unit"><div class="value" data-key="seconds">0</div><div class="label">Секунд</div></div>
+        <div class="unit"><div class="value" data-key="milliseconds">0</div><div class="label">Мс</div></div>
+      </div>
+    `;
+  }
+
+  timerInitialized = true;
+  attachTimerListeners();
+}
+
+// пересоздавать разметку при изменении размера / ориентации
+let lastMobileState = isMobilePortrait();
+window.addEventListener('resize', () => {
+  const nowMobile = isMobilePortrait();
+  if (nowMobile !== lastMobileState) {
+    lastMobileState = nowMobile;
+    timerInitialized = false;
+    // Прямо обновим таймер — он создаст подходящую разметку
+    updateTimer();
+  }
+});
+
 
 function updateValue(key, text) {
   const el = document.querySelector(`.value[data-key="${key}"]`);
